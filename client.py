@@ -4,6 +4,8 @@ import socket
 SERVER_HOST = "localhost"
 SERVER_PORT = 60420
 
+
+#funzione per connetersi al server di gioco
 def start_client():
     # Create a socket object
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -25,17 +27,11 @@ def start_client():
 def client_loop():
     
     client_socket = start_client()
-    
-    try:
-        while True:
-            # Receive response from server
-            response = client_socket.recv(1024).decode('utf-8')
-            print(response)
-            
-    except KeyboardInterrupt:
-        print("Closing connection.")
-    finally:
-        client_socket.close()
+
+    while True:
+        message = client_socket.recv(1024).decode('utf-8')
+        print(message)
 
 if __name__ == "__main__":
     client_loop()
+    print("uscendo per qualche motivo!")
