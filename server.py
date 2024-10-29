@@ -2,7 +2,7 @@ import socket
 import threading
 
 class GameServer:
-    
+    #inizializzo le variabili con un costruttore
     def __init__(self, host="localhost", port=60420):
         self.host = host
         self.port = port
@@ -11,15 +11,18 @@ class GameServer:
         self.start = 0
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+    #funzione per aggiungere i giocatori in memoria
     def add_player(self, username, addr):
         self.players.append([username, addr])
 
+    #funzione per rimuove i giocatori in caso di disconnessione
     def remove_player(self, addr):  
         for player in self.players:
             if player[1] == addr:
                 self.players.pop(player)
                 break
     
+    #funzione per gestire i client
     def handle_client(self, conn, addr):
         """
         Assegna un username e gestisce i client connessi
@@ -81,7 +84,18 @@ class GameServer:
 
                 # faccio partire il thread appena creato
                 thread.start()
-            
+                
+                #segnalo al server che ci sono 3 giocatori connessi
+                #chiedo conferma per avviare la partita
+                while True:
+                    x = input("iniziare la partita? Y/N")
+                    
+                    if (x == "Y"):
+                        self.start = 1
+                        break
+                
+
+
 
 if __name__ == "__main__":
     server = GameServer()
