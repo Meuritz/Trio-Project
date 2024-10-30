@@ -30,6 +30,10 @@ def client_loop():
 
     while True:
         message = client_socket.recv(1024).decode('utf-8')
+        #cascata di if else che ci permette di comunicare con il server
+        #STABILIRE DEI CODICI PER OGNI COSA
+        #funzione per far giocare il giocatore se è di turno
+        #funzione per far capire le giocate in corso degli altri giocatori
         print(message)
 
 if __name__ == "__main__":

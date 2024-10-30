@@ -5,19 +5,19 @@ import time
 class GameServer:
     #inizializzo le variabili con un costruttore
     def __init__(self, host="localhost", port=60420):
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.host = host
         self.port = port
         self.players = []
-        self.login_lock = threading.Lock()
-        self.start = threading.Event()
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
+        self.login_lock = threading.Lock() #per evitare che più utenti agiscano allo stesso tempo su "players"
+        self.start = threading.Event() #per far partire la partita una volta che sono entrati 3 giocatori
+        
     #funzione per aggiungere i giocatori in memoria
     def add_player(self, username, addr):
         self.players.append([username, addr])
 
     #funzione per rimuove i giocatori in caso di disconnessione
-    def remove_player(self, addr):  
+    def remove_player(self, addr):
         for player in self.players:
             if player[1] == addr:
                 self.players.pop(player)
@@ -25,9 +25,7 @@ class GameServer:
     
     #funzione per gestire i client
     def handle_client(self, conn, addr):
-        """
-        Assegna un username e gestisce i client connessi
-        """
+        
         running = True
         
         try:
@@ -46,16 +44,19 @@ class GameServer:
             welcome_message = f"Benvenut3 {username}! il gioco iniziera a breve.."
             conn.send(welcome_message.encode('utf-8'))
     
+            #quando si arriva a 3 giocatori il gioco inizia in automatico
             self.start.wait()
-            
+            time.sleep(1)
             print("avvio in corso...")
+
             # da qui inizia il gioco
             while running:
                 # fare in modo che si entri in questa parte solo dopo che sono entrati tutti i giocatori
                 # qua devo gestire gli input dei giocatori
                 # far arrivare le mosse eseguite al processo principale
                 pass
-
+        
+        #gestisco possibili errori
         except (socket.error, ConnectionResetError, WindowsError) as e:
             print(f"[DISCONNECT] {addr} si è disconnesso a causa di {e}")
             with self.login_lock:
@@ -66,39 +67,39 @@ class GameServer:
     
     #metodo per fare avviare il server
     def start_server(self):
+       
         # iniziamo ad avviare il server
         self.server_socket.bind((self.host, self.port))
 
         # From here we listen for connections
         self.server_socket.listen(3)
 
-        # il server è in funzione!
+        # segnalo che il server è online
         print(f"Server online su {self.host} ed in ascolto sulla porta {self.port}")
 
-        # connessioni e inizio partita
+        # gestisco le connessioni
         while True:
             
             # accetto le connessioni fino ad un max di 3, e creo un thread per ogni connessione
-            if (threading.active_count() - 1) != 3:
-                conn, addr = self.server_socket.accept()
-                thread = threading.Thread(target=self.handle_client, args=(conn, addr))  # Create a new thread for the client
+            if (len(self.players)) != 3:
 
-                # stampo i thread attivi
+                #accetto le connessioni ed avvio un thread per ognuna di esse
+                conn, addr = self.server_socket.accept()
+                thread = threading.Thread(target=self.handle_client, args=(conn, addr))
+
+                # stampo il numero di giocatori connessi
                 print(f"{threading.active_count()} thread attivi")
 
                 # faccio partire il thread appena creato
                 thread.start()
                 
-                #segnalo al server che ci sono 3 giocatori connessi
-                #chiedo conferma per avviare la partita
+            #chiedo conferma per avviare la partita dopo che sono entrati tutti i giocatori
             if (len(self.players)) == 3: 
                 
                 print("Tutti i giocatori sono connessi. Inizio la partita...")
                 time.sleep(1) 
                 self.start.set()
                 break
-                
-
 
 
 if __name__ == "__main__":
