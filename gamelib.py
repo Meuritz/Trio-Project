@@ -2,12 +2,15 @@ import random
 
 class Trio:
     #inizializzo le varibili e preparo il gioco
-    def __init__(self ):
+    def __init__(self, players):
         
         self.deck = []
-        self.player_hand = []
         self.board = []
-        #self.player = players
+        self.player_hand = []           #this 3 list rely on the fact that every position corresponds to a player
+        self.player = players           # ex index1, will be the hand of the player whit index 1, and the tris that
+        self.tris_counter = [0 , 0, 0]          #he has done in the game
+        self.buffer = []
+
 
     
     #preparo il gioco
@@ -30,14 +33,18 @@ class Trio:
         #metto le carte rimaste nella board
         for x in self.deck:
             self.board.append(x)
-
+  
     #funzione per stampare le carte dei giocatori
-    def print_cards(self):
+    def print_cards(self, player):
         
-        pass
+        self.player_hand[player].sort()
 
+        return str(self.player_hand[player])
 
-x = Trio()
-x.prepare_game()
-print(x.player_hand)
-print(x.board)
+    #funzione per ottenere le carte della board
+    def get_board(self):
+        return self.board
+
+    #funzione per rimuove una determinata carta dalla board, in caso di tris
+    def remove_board(self, x):
+        self.board.remove(x)

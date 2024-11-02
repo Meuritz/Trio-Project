@@ -1,4 +1,5 @@
 import socket
+from os import system, name
 
 # Define the server address and port
 SERVER_HOST = "localhost"
@@ -24,17 +25,30 @@ def start_client():
     
     return client_socket
 
+
+# define our clear function
+def clear():
+
+    # for windows
+    if name == 'nt':
+        _ = system('cls')
+
+    # for mac and linux(here, os.name is 'posix')
+    else:
+        _ = system('clear')
+
 def client_loop():
     
     client_socket = start_client()
 
     while True:
         message = client_socket.recv(1024).decode('utf-8')
-        #cascata di if else che ci permette di comunicare con il server
-        #STABILIRE DEI CODICI PER OGNI COSA
-        #funzione per far giocare il giocatore se è di turno
-        #funzione per far capire le giocate in corso degli altri giocatori
-        print(message)
+        
+        if message == "0":  #aggiorno le carte del giocatore ed il campo
+            clear()
+            print("Carte in Mano:\n")
+            print(client_socket.recv(1024).decode('utf-8'))
+            pass
 
 if __name__ == "__main__":
     client_loop()
