@@ -6,13 +6,12 @@ class Trio:
         
         self.deck = []
         self.board = []
+        self.gameboard = []
         self.player_hand = []           #this 3 list rely on the fact that every position corresponds to a player
         self.player = players           # ex index1, will be the hand of the player whit index 1, and the tris that
         self.tris_counter = [0 , 0, 0]          #he has done in the game
         self.buffer = []
 
-
-    
     #preparo il gioco
     def prepare_game(self):
         
@@ -33,18 +32,50 @@ class Trio:
         #metto le carte rimaste nella board
         for x in self.deck:
             self.board.append(x)
-  
-    #funzione per stampare le carte dei giocatori
+        #inizializzo la gameboard con carte coperte
+        self.gameboard = self.hidden_board()
+    
+    #funzione per stampare le carte di un giocatore
     def print_cards(self, player):
         
         self.player_hand[player].sort()
 
         return str(self.player_hand[player])
 
-    #funzione per ottenere le carte della board
+    #funzione per ottenere le carte della board (sono le carte effettive)
     def get_board(self):
         return self.board
+    
+    #funzione per ottenere le carte dalla gameboard (carte viste dai giocatori)
+    def get_gameboard(self):
+        return self.gameboard
+    
+    #funzione per ottenere una carta dalla board
+    def get_from_board(self, x):
+        return self.board[x]
 
     #funzione per rimuove una determinata carta dalla board, in caso di tris
     def remove_board(self, x):
-        self.board.remove(x)
+        self.board[x] = ""
+    
+    #funzione per avere una board di carte coperte
+    def hidden_board(self):
+        
+        hidden_board = []
+        
+        #faccio in modo di stampare spazi vuoti se una carta è stata rimossa
+        for card in self.board:
+            if not card:
+                hidden_board.append(" ")
+            else:
+                hidden_board.append("X")
+        
+        return hidden_board
+    
+    #per ricoprire le carte
+    def reset_gameboard(self):
+        self.gameboard = self.hidden_board()
+    
+    #funzione per scoprire una carta sulla board
+    def draw_from_board(self, x):
+        self.gameboard[x] = self.get_from_board(x)

@@ -119,6 +119,7 @@ class GameServer:
     def start_game(self):
 
         update = True
+        turn = 1
 
         #creo un oggetto trio e gli passo i giocatori
         game = Trio(self.players)
@@ -131,7 +132,31 @@ class GameServer:
             if update == True:
                 self.give_cards(game)
                 update = False
-            
+
+            #switch case per capire cosa vuole fare il giocatore di turno
+            while True:
+                #faccio in modo che il client del giocatore di turno possa giocare
+                conn = self.players[1]
+                conn.send("1".encode('utf-8'))
+
+                input = conn.recv(1024).decode('utf-8')
+
+                match input:
+                    #gioca una carta dalla mano
+                    case "0":
+                        pass
+
+                    #scopri una carta dalla board
+                    case "1":
+                        pass
+
+                    #chiedi una carta ad uno dei giocatori
+                    case "2":
+                        pass
+                    #ripeti la scelta
+                    case _:
+                        pass
+
 
 if __name__ == "__main__":
     server = GameServer()
