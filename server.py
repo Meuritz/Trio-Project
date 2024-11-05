@@ -113,7 +113,6 @@ class GameServer:
                 conn = player[1]
                 conn.send("0".encode('utf-8'))
                 conn.send(game.print_cards(self.players.index(player)).encode('utf-8'))
-            pass
 
     #this method handles the game
     def start_game(self):
@@ -133,29 +132,36 @@ class GameServer:
                 self.give_cards(game)
                 update = False
 
-            #switch case per capire cosa vuole fare il giocatore di turno
+            #faccio in modo che il client del giocatore di turno possa giocare
+            conn = self.players[1]
+            conn.send("1".encode('utf-8'))
+
+            input = conn.recv(1024).decode('utf-8')
+            
             while True:
-                #faccio in modo che il client del giocatore di turno possa giocare
-                conn = self.players[1]
-                conn.send("1".encode('utf-8'))
 
-                input = conn.recv(1024).decode('utf-8')
+                card_played = []
+                last_card = ""
 
-                match input:
-                    #gioca una carta dalla mano
-                    case "0":
-                        pass
+                #gioca una carta dalla mano
+                if input == "0":
+                    card_index = conn.recv(1024).decode('utf-8')
+                    last_card = game.player_hand[turn-1][card_index]
+                    
+                #scopri una carta dalla board
+                elif input == "1":
+                    pass
 
-                    #scopri una carta dalla board
-                    case "1":
-                        pass
+                #chiedi una carta ad uno dei giocatori
+                elif input == "2":
+                    pass
 
-                    #chiedi una carta ad uno dei giocatori
-                    case "2":
+                #ripeti la scelta
+                else:
                         pass
-                    #ripeti la scelta
-                    case _:
-                        pass
+                
+
+            #dico chi ha vinto il gioco
 
 
 if __name__ == "__main__":

@@ -5,12 +5,14 @@ class Trio:
     def __init__(self, players):
         
         self.deck = []
+
         self.board = []
         self.gameboard = []
+        
         self.player_hand = []           #this 3 list rely on the fact that every position corresponds to a player
         self.player = players           # ex index1, will be the hand of the player whit index 1, and the tris that
-        self.tris_counter = [0 , 0, 0]          #he has done in the game
-        self.buffer = []
+        
+        self.tris_counter = [0, 0, 0]          #counter for tris that have been done
 
     #preparo il gioco
     def prepare_game(self):
