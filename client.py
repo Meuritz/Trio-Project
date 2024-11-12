@@ -43,13 +43,58 @@ def client_loop():
 
     while True:
         message = client_socket.recv(1024).decode('utf-8')
+        print(message)
         
-        if message == "0":  #aggiorno le carte del giocatore ed il campo
-            clear()
+        # aggiorno le carte
+        if message == "0":  # aggiorno le carte del giocatore ed il campo
+            # clear()
             print("Carte in Mano:\n")
             print(client_socket.recv(1024).decode('utf-8'))
-            pass
+            client_socket.send("DONE".encode('utf-8'))
+        
+        # turno del giocatore
+        elif message == "1":
+            print("è il tuo turno!")
+            while True:
+                # il giocatore decide cosa vuole fare
+                print("cosa vuoi fare?\n 0: carta da mano\n 1: carta dalla board\n 2: carta da un giocatore)\n")
+                move = ""
+                
+                # ciclo fino a che il giocatore non sceglie un opzione valida
+                while True:
+                    move = input("-->")
+                    if  0 <= int(move) <= 2:
+                        client_socket.send(move.encode('utf-8'))
+                        break
+                    else:
+                        print("scelta non valida!")
+
+                # carta da mano
+                if move == "0":
+
+                    # prendo in input la carta giocata e la mando al server
+                    card = input("Quale carta vuoi giocare? [0-8]\n -->")
+                    client_socket.send(card.encode("utf-8"))
+                    
+                    # ricevo la carta giocata dal server
+                    print(client_socket.recv(1024).decode('utf-8'))
+
+                    #aspetto che il server mi dica se posso continuare
+                    response = client_socket.recv(1024).decode('utf-8')
+                    print(f"[LOG] response = {response}") 
+
+                    if response == "STOP":
+                        break
+                
+                # carta dalla board
+                elif move == "1":
+                    pass
+                
+                # carta da un giocatore
+                elif move == "2":
+                    pass
 
 if __name__ == "__main__":
+
     client_loop()
     print("uscendo per qualche motivo!")
