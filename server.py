@@ -43,7 +43,7 @@ class GameServer:
                 self.add_player(username, conn, addr)
             
             # stampo il numero di giocatori connessi
-                print(f"{self.connected_players} giocatori connessi")
+            print(f"{self.connected_players} giocatori connessi")
 
             # Send a welcome message back to the client
             welcome_message = f"Benvenut3 {username}! il gioco iniziera a breve.."
@@ -111,7 +111,16 @@ class GameServer:
             for player in self.players:
                 
                 conn = player[1]
+
+                #0 il client si prepara a ricevere le carte
                 conn.send("0".encode('utf-8'))
+
+                #mando la board coperta
+                conn.send(game.get_gameboard().encode('utf-8'))
+
+                if conn.recv(1024).decode('utf-8') == "NEXT":
+                    pass
+
                 conn.send(game.print_cards(self.players.index(player)).encode('utf-8'))
 
                 if conn.recv(1024).decode('utf-8') == "DONE":
@@ -191,7 +200,6 @@ class GameServer:
                     
                 #scopri una carta dalla board
                 elif move == "1":
-                    conn.send("1".encode('utf-8'))
                     pass
 
                 #chiedi una carta ad uno dei giocatori

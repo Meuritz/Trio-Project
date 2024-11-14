@@ -37,6 +37,25 @@ def clear():
     else:
         _ = system('clear')
 
+def update_cards(client_socket):
+    #mando la board
+    
+    clear()
+
+    print("Carte nella board:")
+    board = client_socket.recv(1024).decode('utf-8')
+    print(board)
+    
+    #chiedo il prossimo pacchetto
+    client_socket.send("NEXT".encode('utf-8'))
+
+    #mando le carte in mano
+    print("Carte in Mano:")
+    hand = client_socket.recv(1024).decode('utf-8')
+    print(hand)
+
+    client_socket.send("DONE".encode('utf-8'))
+
 def client_loop():
     
     client_socket = start_client()
@@ -47,17 +66,14 @@ def client_loop():
         
         # aggiorno le carte
         if message == "0":  # aggiorno le carte del giocatore ed il campo
-            # clear()
-            print("Carte in Mano:\n")
-            print(client_socket.recv(1024).decode('utf-8'))
-            client_socket.send("DONE".encode('utf-8'))
-        
+            update_cards(client_socket)
+            pass
         # turno del giocatore
         elif message == "1":
             print("è il tuo turno!")
             while True:
                 # il giocatore decide cosa vuole fare
-                print("cosa vuoi fare?\n 0: carta da mano\n 1: carta dalla board\n 2: carta da un giocatore)\n")
+                print("cosa vuoi fare?\n 0: carta da mano\n 1: carta dalla board\n 2: carta da un giocatore\n")
                 move = ""
                 
                 # ciclo fino a che il giocatore non sceglie un opzione valida

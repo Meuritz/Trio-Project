@@ -6,8 +6,8 @@ class Trio:
         
         self.deck = []
 
-        self.board = []
-        self.gameboard = []
+        self.board = []                      #board effettiva
+        self.gameboard = self.hidden_board() #board che viene stampata
         
         self.player_hand = []           #this 3 list rely on the fact that every position corresponds to a player
         self.player = players           # ex index1, will be the hand of the player whit index 1, and the tris that
@@ -50,7 +50,7 @@ class Trio:
     
     #funzione per ottenere le carte dalla gameboard (carte viste dai giocatori)
     def get_gameboard(self):
-        return self.gameboard
+        return str(self.gameboard)
     
     #funzione per ottenere una carta dalla board
     def get_from_board(self, x):
@@ -67,6 +67,7 @@ class Trio:
         
         #faccio in modo di stampare spazi vuoti se una carta è stata rimossa
         for card in self.board:
+            
             if not card:
                 hidden_board.append(" ")
             else:
