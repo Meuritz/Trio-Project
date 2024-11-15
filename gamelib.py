@@ -24,12 +24,14 @@ class Trio:
                     self.deck.append(x)
         random.shuffle(self.deck)
 
-        #metto le carte nelle mani dei giocatori
+        #metto le carte nelle mani dei giocatori e le sorto
         for x in range(3):
             temp = []
             for y in range(9):
                 temp.append(self.deck.pop())
             self.player_hand.append(temp)
+            self.player_hand[x].sort()
+
 
         #metto le carte rimaste nella board
         for x in self.deck:
@@ -37,11 +39,11 @@ class Trio:
         #inizializzo la gameboard con carte coperte
         self.gameboard = self.hidden_board()
     
-    #funzione per stampare le carte di un giocatore
-    def print_cards(self, player):
-        
+    def sort_hand(self, player):
         self.player_hand[player].sort()
 
+    #funzione per stampare le carte di un giocatore
+    def print_cards(self, player):
         return str(self.player_hand[player])
 
     #funzione per ottenere le carte della board (sono le carte effettive)
@@ -55,8 +57,12 @@ class Trio:
     #funzione per ottenere una carta dalla board
     def get_from_board(self, x):
         return self.board[x]
+    
+    #funzione per aggiungere una determinata carta dalla board
+    def add_board(self, value, x):
+        self.board[x] = value
 
-    #funzione per rimuove una determinata carta dalla board, in caso di tris
+    #funzione per rimuove una determinata carta dalla board
     def remove_board(self, x):
         self.board[x] = ""
     

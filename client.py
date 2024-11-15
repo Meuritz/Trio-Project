@@ -37,11 +37,13 @@ def clear():
     else:
         _ = system('clear')
 
+#manda le carte della mano a ogni giocatore, e la board coperta
 def update_cards(client_socket):
     #mando la board
     
     clear()
 
+    #mando le carte della board coperte
     print("Carte nella board:")
     board = client_socket.recv(1024).decode('utf-8')
     print(board)
