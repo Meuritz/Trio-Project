@@ -39,6 +39,7 @@ class Trio:
         #inizializzo la gameboard con carte coperte
         self.gameboard = self.hidden_board()
     
+    #per ordinare le carte di un giocatore
     def sort_hand(self, player):
         self.player_hand[player].sort()
 
@@ -58,7 +59,7 @@ class Trio:
     def get_from_board(self, x):
         return self.board[x]
     
-    #funzione per aggiungere una determinata carta dalla board
+    #funzione per aggiungere una determinata carta alla board
     def add_board(self, value, x):
         self.board[x] = value
 

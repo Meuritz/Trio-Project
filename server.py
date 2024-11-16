@@ -112,17 +112,20 @@ class GameServer:
                 
                 conn = player[1]
 
-                #0 il client si prepara a ricevere le carte
-                conn.send("0".encode('utf-8'))
+                #UPDATE il client si prepara a ricevere le carte
+                conn.send("UPDATE".encode('utf-8'))
 
                 #mando la board coperta
                 conn.send(game.get_gameboard().encode('utf-8'))
 
+                #aspetto conferma prima di continuare
                 if conn.recv(1024).decode('utf-8') == "NEXT":
                     pass
-
+                
+                #mando le carte in mano al giocatore
                 conn.send(game.print_cards(self.players.index(player)).encode('utf-8'))
 
+                #prima di uscire aspetto che tutti i client abbiano mandato la conferma finale
                 if conn.recv(1024).decode('utf-8') == "DONE":
                     ack += 1
 
@@ -131,6 +134,20 @@ class GameServer:
             else:
                 print("[LOG] Errore nel invio delle carte")
 
+    #per mandare le carte che sono state giocate durante il turno
+    def send_messages(self, messages):
+        for player in self.players:
+                
+                conn = player[1]
+                conn.send("UPDATE".encode('utf-8'))
+                
+                #mando un messaggio e aspetto la conferma della ricezione
+                for message in messages:
+                    conn.send(message.encode('utf-8'))
+                    
+                    if conn.recv(1024).decode('utf-8') == "NEXT":
+                        pass
+    
     #this method handles the game
     def start_game(self):
 
@@ -149,18 +166,17 @@ class GameServer:
                 self.give_cards(game)
                 update = False
             
-            player = self.players[turn]
-            conn = player[1]
-            player_name = player[0]
-            card_played = []
+            player = self.players[turn] #giocatore
+            conn = player[1] #per comunicare con il giocatore
+            player_name = player[0] #nome del giocatore di turno
+            card_played = [] #le carte che sono state giocate
+            messages = [] #i messaggi da inviare dopo ogni update  
             
             #dico al giocatore che è il suo turno
             conn.send("1".encode('utf-8'))
 
             #faccio giocare il giocatore fino a che non usa una carta diversa dalla prima usata
             for i in range(2):
-                
-                print("sono nel for loop!")
 
                 #ricevo la mossa dal giocatore
                 move = conn.recv(1024).decode('utf-8')
@@ -172,27 +188,28 @@ class GameServer:
                     card_index = conn.recv(1024).decode('utf-8')
                     card = game.player_hand[turn][int(card_index)]
 
+                    #la rimuovo dalla mano del giocatore
+                    game.player_hand[turn].remove(card)
+                    
+                    #mando le carte aggiornate
+                    self.give_cards(game)
+                    
                     #comunico la carta giocata al player di turno
-                    conn.send(f"Hai giocato un {card}!".encode('utf-8'))
+                    #conn.send(f"Hai giocato un {card}!".encode('utf-8'))
 
                     #comunico la carta giocata agli altri player
-                    for player in self.players:
-                        if player[1] != conn:
-                            spectator = player[1]
-                            spectator.send(f"{player_name} ha giocato un {card}".encode('utf-8'))
+                    #for player in self.players:
+                        #if player[1] != conn:
+                            #spectator = player[1]
+                            #spectator.send(f"{player_name} ha giocato un {card}".encode('utf-8'))
 
                     #se la carta è uguale alla prima giocata o è la prima
-                    if len(card_played) == 0:
+                    if len(card_played) == 0 or card == card_played[0]:
                         card_played.append(int(card))
                         print(f"carte giocate: {len(card_played)}")
                         conn.send("OK".encode('utf-8'))
-
-                    elif card == card_played[0]:
-                        print(f"carte giocate: {card_played[0]}, {card}")
-                        card_played.append(int(card))
-                        conn.send("OK".encode('utf-8'))
                     
-                    #se la carta è diversa dall prima carta giocata
+                    #se la carta è diversa dalla prima carta giocata
                     else:
                         conn.send("STOP".encode('utf-8'))
                         print("[LOG] il turno del giocatore è terminato!")
@@ -200,13 +217,18 @@ class GameServer:
                     
                 #scopri una carta dalla board
                 elif move == "1":
+
                     pass
 
                 #chiedi una carta ad uno dei giocatori
                 elif move == "2":
                     pass
-
-            turn += 1
+            
+            #cambio il turno
+            if turn == 2:
+                turn = 0
+            else:
+                turn += 1
 
 
 if __name__ == "__main__":

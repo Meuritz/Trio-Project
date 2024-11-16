@@ -8,6 +8,7 @@ SERVER_PORT = 60420
 
 #funzione per connetersi al server di gioco
 def start_client():
+    
     # Create a socket object
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     
@@ -39,7 +40,6 @@ def clear():
 
 #manda le carte della mano a ogni giocatore, e la board coperta
 def update_cards(client_socket):
-    #mando la board
     
     clear()
 
@@ -58,22 +58,28 @@ def update_cards(client_socket):
 
     client_socket.send("DONE".encode('utf-8'))
 
+#loop di gioco
 def client_loop():
     
     client_socket = start_client()
 
+    #loop del gioco
     while True:
         message = client_socket.recv(1024).decode('utf-8')
-        print(message)
+        print(f"[LOG]: {message}")
         
-        # aggiorno le carte
-        if message == "0":  # aggiorno le carte del giocatore ed il campo
+        # se ricevo update aggiorno le carte
+        if message == "UPDATE":
             update_cards(client_socket)
             pass
-        # turno del giocatore
+        
+        # se ricevo un 1 si entra nel turno del giocatore
         elif message == "1":
             print("è il tuo turno!")
+            
+            #loop del turno
             while True:
+                
                 # il giocatore decide cosa vuole fare
                 print("cosa vuoi fare?\n 0: carta da mano\n 1: carta dalla board\n 2: carta da un giocatore\n")
                 move = ""
@@ -94,8 +100,12 @@ def client_loop():
                     card = input("Quale carta vuoi giocare? [0-8]\n -->")
                     client_socket.send(card.encode("utf-8"))
                     
+                    #ricevo gli aggiornamenti
+                    if client_socket.recv(1024).decode('utf-8') == "UPDATE":
+                        update_cards(client_socket)
+
                     # ricevo la carta giocata dal server
-                    print(client_socket.recv(1024).decode('utf-8'))
+                    #print(client_socket.recv(1024).decode('utf-8'))
 
                     #aspetto che il server mi dica se posso continuare
                     response = client_socket.recv(1024).decode('utf-8')
