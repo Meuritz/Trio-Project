@@ -58,6 +58,19 @@ def update_cards(client_socket):
 
     client_socket.send("DONE".encode('utf-8'))
 
+#per inviare e ricevere messaggi 
+def recv_message(client_socket):
+    while True:
+        message = client_socket.recv(1024).decode('utf-8')
+        
+        if message == "MESSAGE":
+            message = client_socket.recv(1024).decode('utf-8')
+            print(message)
+            client_socket.send("READY".encode('utf-8'))
+            
+        elif message == "DONE":
+            break
+    
 #loop di gioco
 def client_loop():
     
@@ -65,6 +78,7 @@ def client_loop():
 
     #loop del gioco
     while True:
+        
         message = client_socket.recv(1024).decode('utf-8')
         print(f"[LOG]: {message}")
         
@@ -72,6 +86,10 @@ def client_loop():
         if message == "UPDATE":
             update_cards(client_socket)
             pass
+
+        if message == "MESSAGE":
+            print("entrato qua zioe o ivfji ")
+            recv_message(client_socket)
         
         # se ricevo un 1 si entra nel turno del giocatore
         elif message == "1":
@@ -105,7 +123,8 @@ def client_loop():
                         update_cards(client_socket)
 
                     # ricevo la carta giocata dal server
-                    #print(client_socket.recv(1024).decode('utf-8'))
+                    if client_socket.recv(1024).decode('utf-8') == "UPDATE":
+                        recv_message(client_socket)
 
                     #aspetto che il server mi dica se posso continuare
                     response = client_socket.recv(1024).decode('utf-8')
