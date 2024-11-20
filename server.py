@@ -13,6 +13,7 @@ class GameServer:
         self.login_lock = threading.Lock() #per evitare che più utenti agiscano allo stesso tempo su "players"
         self.start = threading.Event() #per far partire la partita una volta che sono entrati 3 giocatori
         self.connected_players = 0
+        self.comm_lock =threading.Lock()
 
     #funzione per aggiungere i giocatori in memoria
     def add_player(self, username, addr, conn):
@@ -142,7 +143,7 @@ class GameServer:
                 
             conn = player[1]
 
-            conn.send("UPDATE".encode('utf-8'))
+            conn.send("UPDATE_CARDS".encode('utf-8'))
 
             for message in messages:
                 
@@ -183,6 +184,8 @@ class GameServer:
 
             #faccio giocare il giocatore fino a che non usa una carta diversa dalla prima usata
             for i in range(2):
+                
+                print(f"sono nel turno del giocatore {player_name}")
 
                 #ricevo la mossa dal giocatore
                 move = conn.recv(1024).decode('utf-8')
@@ -200,8 +203,11 @@ class GameServer:
                     
                     #mando le carte aggiornate
                     self.give_cards(game)
-                    time.sleep(1)  # import time
+                    
+                    #iioi
                     self.send_message(messages)
+                    
+                    time.sleep(1)  # import time
 
                     #se la carta è uguale alla prima giocata o è la prima
                     if len(card_played) == 0 or card == card_played[0]:

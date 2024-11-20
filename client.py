@@ -41,7 +41,10 @@ def clear():
 #manda le carte della mano a ogni giocatore, e la board coperta
 def update_cards(client_socket):
     
-    clear()
+    #clear()
+
+    for _ in range(5):
+        print("\n")
 
     #mando le carte della board coperte
     print("Carte nella board:")
@@ -60,6 +63,7 @@ def update_cards(client_socket):
 
 #per inviare e ricevere messaggi 
 def recv_message(client_socket):
+    
     while True:
         message = client_socket.recv(1024).decode('utf-8')
         
@@ -86,8 +90,9 @@ def client_loop():
         if message == "UPDATE":
             update_cards(client_socket)
             pass
-
-        if message == "MESSAGE":
+        
+        # stampo le carte giocate nel turno
+        if message == "UPDATE_CARDS":
             print("entrato qua zioe o ivfji ")
             recv_message(client_socket)
         
@@ -123,7 +128,7 @@ def client_loop():
                         update_cards(client_socket)
 
                     # ricevo la carta giocata dal server
-                    if client_socket.recv(1024).decode('utf-8') == "UPDATE":
+                    if client_socket.recv(1024).decode('utf-8') == "UPDATE_CARDS":
                         recv_message(client_socket)
 
                     #aspetto che il server mi dica se posso continuare
