@@ -63,11 +63,11 @@ class Trio:
     def add_board(self, value, x):
         self.board[x] = value
 
-    #funzione per rimuove una determinata carta dalla board
-    def remove_board(self, x):
+    #funzione per rimuove una determinata carta dalla board(la board effettiva)
+    def remove_from_board(self, x):
         self.board[x] = ""
     
-    #funzione per avere una board di carte coperte
+    #funzione per avere una board di carte coperte(board mostrata nel gioco)
     def hidden_board(self):
         
         hidden_board = []
@@ -86,6 +86,11 @@ class Trio:
     def reset_gameboard(self):
         self.gameboard = self.hidden_board()
     
-    #funzione per scoprire una carta sulla board
+    #funzione per scoprire una carta dalla  board
     def draw_from_board(self, x):
         self.gameboard[x] = self.get_from_board(x)
+    
+    #prende la carta più alta dalla mano di un giocatore
+    def get_max_card_player(self, player_index):
+        return max(self.player_hand[player_index])
+    
