@@ -165,8 +165,23 @@ def client_loop():
 
                 # carta da un giocatore
                 elif move == "2":
-                    pass
+                    print("Da quale giocatore?")
 
+                    #stampare nomi dei giocatori
+                    ############################
+
+                    #ciclo fino a quando il giocatore non sceglie un opzione valide
+                    while True:
+                        player = input("-->")
+                        
+                        if  0 <= int(player) <= 1:
+                            #mando il giocatore scelto al server ed esco
+                            client_socket.send(player.encode('utf-8'))
+                            break
+                        else:
+                            print("scelta non valida!")
+                    
+                    
 if __name__ == "__main__":
 
     client_loop()

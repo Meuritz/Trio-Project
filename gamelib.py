@@ -10,7 +10,7 @@ class Trio:
         self.gameboard = self.hidden_board() #board che viene stampata
         
         self.player_hand = []           #this 3 list rely on the fact that every position corresponds to a player
-        self.player = players           # ex index1, will be the hand of the player whit index 1, and the tris that
+        self.players = players           # ex index1, will be the hand of the player whit index 1, and the tris that
         
         self.tris_counter = [0, 0, 0]          #counter for tris that have been done
 
@@ -93,4 +93,18 @@ class Trio:
     #prende la carta più alta dalla mano di un giocatore
     def get_max_card_player(self, player_index):
         return max(self.player_hand[player_index])
+    
+    #prende la carta più bassa dalla mano di un giocatore
+    def get_max_card_player(self, player_index):
+        return min(self.player_hand[player_index])
+
+    #per stampare i nomi dei giocatori eccetto il giocatore corrente
+    def players_name(self):
+        
+        names = []
+
+        for player in self.players:
+            names.append(f"{player[0]}\n")
+
+        return names
     
