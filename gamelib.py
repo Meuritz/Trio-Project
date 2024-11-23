@@ -95,16 +95,8 @@ class Trio:
         return max(self.player_hand[player_index])
     
     #prende la carta più bassa dalla mano di un giocatore
-    def get_max_card_player(self, player_index):
+    def get_min_card_player(self, player_index):
         return min(self.player_hand[player_index])
-
-    #per stampare i nomi dei giocatori eccetto il giocatore corrente
-    def players_name(self):
-        
-        names = []
-
-        for player in self.players:
-            names.append(f"{player[0]}\n")
-
-        return names
+    
+    
     

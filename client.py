@@ -93,7 +93,7 @@ def client_loop():
             pass
         
         # stampo le carte giocate nel turno
-        if message == "UPDATE_CARDS":
+        if message == "UPDATE_MSG":
             print("entrato qua zioe o ivfji ")
             recv_message(client_socket)
         
@@ -130,7 +130,7 @@ def client_loop():
                         update_cards(client_socket)
 
                     # stampo le carte giocate in precendenza e l'ultima carta giocata
-                    if client_socket.recv(1024).decode('utf-8') == "UPDATE_CARDS":
+                    if client_socket.recv(1024).decode('utf-8') == "UPDATE_MSG":
                         recv_message(client_socket)
 
                     #aspetto che il server mi dica se posso continuare
@@ -152,7 +152,7 @@ def client_loop():
                         update_cards(client_socket)
                     
                     # stampo le carte giocate in precendenza e l'ultima carta giocata
-                    if client_socket.recv(1024).decode('utf-8') == "UPDATE_CARDS":
+                    if client_socket.recv(1024).decode('utf-8') == "UPDATE_MSG":
                         recv_message(client_socket)
 
                     #aspetto che il server mi dica se posso continuare
@@ -168,9 +168,18 @@ def client_loop():
                     print("Da quale giocatore?")
 
                     #stampare nomi dei giocatori
-                    ############################
-
-                    #ciclo fino a quando il giocatore non sceglie un opzione valide
+                        
+                    name = []
+                    
+                    name.append(client_socket.recv(1024).decode('utf-8'))
+                    print(name[0])
+                    client_socket.send("NEXT".encode("utf-8"))
+                    
+                    name.append(client_socket.recv(1024).decode('utf-8'))
+                    print(name[1])
+                    client_socket.send("DONE".encode("utf-8"))
+                    
+                    #ciclo fino a quando il giocatore non sceglie un opzione valida tra i giocatori
                     while True:
                         player = input("-->")
                         
@@ -180,8 +189,34 @@ def client_loop():
                             break
                         else:
                             print("scelta non valida!")
+                            
+                    #ciclo fino a quando il giocatore non sceglie un opzione valida tra alta/bassa
+                    while True:
+                        player = input("-->")
+                        
+                        if  0 <= int(player) <= 1:
+                            #mando la scelta al server ed esco
+                            client_socket.send(player.encode('utf-8'))
+                            break
+                        else:
+                            print("scelta non valida!")
                     
+                    #ricevo gli aggiornamenti
+                    if client_socket.recv(1024).decode('utf-8') == "UPDATE":
+                        update_cards(client_socket)
                     
+                    # stampo le carte giocate in precendenza e l'ultima carta giocata
+                    if client_socket.recv(1024).decode('utf-8') == "UPDATE_MSG":
+                        recv_message(client_socket)
+
+                    #aspetto che il server mi dica se posso continuare
+                    response = client_socket.recv(1024).decode('utf-8')
+                    print(f"[LOG] response = {response}") 
+
+                    if response == "STOP":
+                        break
+                    
+                                       
 if __name__ == "__main__":
 
     client_loop()
