@@ -94,7 +94,6 @@ def client_loop():
         
         # stampo le carte giocate nel turno
         if message == "UPDATE_MSG":
-            print("entrato qua zioe o ivfji ")
             recv_message(client_socket)
         
         # se ricevo un 1 si entra nel turno del giocatore

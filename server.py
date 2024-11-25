@@ -39,7 +39,7 @@ class GameServer:
             username = conn.recv(1024).decode('utf-8')
             print(f"[PLAYER] {username} da {addr}")
 
-            # Store the username in the players dictionary list
+            # Store the username in the players list
             with self.login_lock:
                 self.add_player(username, conn, addr)
             
@@ -131,9 +131,9 @@ class GameServer:
                     ack += 1
 
             if(ack == 3):
-                print("[LOG] Carte inviate con successo!")
+                print("[SERVER] Carte inviate con successo!")
             else:
-                print("[LOG] Errore nel invio delle carte")
+                print("[SERVER] Errore nel invio delle carte")
 
     #per mandare le carte che sono state giocate durante il turno
     def send_message(self, messages):
@@ -147,7 +147,7 @@ class GameServer:
 
             # mando i messaggi ad ogni client 
             for card_message in messages:
-                print(f"[LOG] Sending message to {player[0]}: {card_message}")  # Print the message being sent
+                print(f"[SERVER] Inviando messaggio a {player[0]}: {card_message}")  # Print the message being sent
                 conn.send("MESSAGE".encode('utf-8'))
                 conn.send(card_message.encode('utf-8'))
 
@@ -163,9 +163,9 @@ class GameServer:
                 ack += 1
 
         if ack == len(self.players):
-            print("[LOG] messaggi inviati con successo!")
+            print("[SERVER] messaggi inviati con successo!")
         else:
-            print("[LOG] errore nel invio dei messaggi :(")
+            print("[SERVER] errore nel invio dei messaggi :(")
         
     #recupera i nomi dei giocatori eccetto quello di turno
     def get_player_choice(self, turn):
@@ -219,7 +219,7 @@ class GameServer:
 
                 #ricevo la mossa dal giocatore
                 move = conn.recv(1024).decode('utf-8')
-                print(move)
+                print(f"[GAME] Move = {move}")
                 
                 #0: il giocatore gioca una carta dalla mano
                 if move == "0":
@@ -244,13 +244,16 @@ class GameServer:
                     #se la carta è uguale alla prima giocata o è la prima
                     if len(card_played) == 0 or card == card_played[0]:
                         card_played.append(card)
-                        print(f"carte giocate: {len(card_played)}")
                         conn.send("OK".encode('utf-8'))
-                    
+                        print(f"[GAME]carte giocate: {len(card_played)}")
+                        print(f"[GAME]carta giocata: {card}")
+                        
                     #se la carta è diversa dalla prima carta giocata
                     else:
                         conn.send("STOP".encode('utf-8'))
-                        print(f"[LOG] il turno del giocatore {player_name} è terminato!")
+                        print(f"[GAME]carte giocate: {len(card_played)}")
+                        print(f"[GAME]carta giocata: {card}")
+                        print(f"[GAME] il turno del giocatore {player_name} è terminato!")
                         break
                     
                 #1: scopri una carta dalla board
@@ -315,58 +318,58 @@ class GameServer:
                        names[i] = x
                 
                                 
-                #ricevo la scelta del giocatore
-                player_choice = int(conn.recv(1024).decode('utf-8'))    
-                                                            
-                #ricevo la scelta tra carta alta o bassa
-                card_choice = int(conn.recv(1024).decode('utf-8'))
+                    #ricevo la scelta del giocatore
+                    player_choice = int(conn.recv(1024).decode('utf-8'))    
+                                                                
+                    #ricevo la scelta tra carta alta o bassa
+                    card_choice = int(conn.recv(1024).decode('utf-8'))
 
-                #varibile per contenere l'INDEX DEL GIOCATORE SCELTO
-                selected_index = ""
+                    #varibile per contenere l'INDEX DEL GIOCATORE SCELTO
+                    selected_index = ""
                 
-                #recupero l'index del giocatore scelto usando il nome
-                for player in self.players:
-                    if names[player_choice] == player[0]:
-                        selected_index = self.players.index(player)
+                    #recupero l'index del giocatore scelto usando il nome
+                    for player in self.players:
+                        if names[player_choice] == player[0]:
+                            selected_index = self.players.index(player)
+                            break
+                    
+                    card = ""
+                
+                    #in base alla scelta alta/bassa chiamo un funzione diversa
+                    if card_choice == 0:
+                        card = game.get_max_card_player(selected_index)
+                    else:    
+                        card = game.get_min_card_player(selected_index)
+                
+                    #tolgo la carta dalla mano del giocatore scelto
+                    game.player_hand[selected_index].remove(card)
+                    
+                    #creo un messaggio e lo metto nel buffer dei messaggi
+                    messages.append(f"{player_name} ha preso un {card} da {names[player_choice]}")
+                    
+                    #mando le carte aggiornate
+                    self.give_cards(game)
+                    
+                    #mando le carte giocate in precedenza
+                    self.send_message(messages)
+
+                    #aspetto che i client finiscano di aggiornare le carte
+                    time.sleep(1)
+                
+                    #se la carta è uguale alla prima giocata o è la prima
+                    if len(card_played) == 0 or card == card_played[0]:
+                        card_played.append(card)
+                        print(f"carte giocate: {len(card_played)}")
+                        print(f"carta giocata: {card}")
+                        conn.send("OK".encode('utf-8'))
+                    
+                    #se la carta è diversa dalla prima carta giocata
+                    else:
+                        conn.send("STOP".encode('utf-8'))
+                        print(f"carte giocate: {len(card_played)}")
+                        print(f"carta giocata: {card}")
+                        print(f"[LOG] il turno del giocatore {player_name} è terminato!")
                         break
-                
-                card = ""
-                
-                #in base alla scelta alta/bassa chiamo un funzione diversa
-                if card_choice == 0:
-                    card = game.get_max_card_player(selected_index)
-                else:    
-                    card = game.get_min_card_player(selected_index)
-                
-                #tolgo la carta dalla mano del giocatore scelto
-                game.player_hand[selected_index].remove(card)
-                
-                #creo un messaggio e lo metto nel buffer dei messaggi
-                messages.append(f"{player_name} ha preso un {card} da {names[player_choice]}")
-                
-                #mando le carte aggiornate
-                self.give_cards(game)
-                
-                #mando le carte giocate in precedenza
-                self.send_message(messages)
-
-                #aspetto che i client finiscano di aggiornare le carte
-                time.sleep(1)
-                
-                #se la carta è uguale alla prima giocata o è la prima
-                if len(card_played) == 0 or card == card_played[0]:
-                    card_played.append(card)
-                    print(f"carte giocate: {len(card_played)}")
-                    print(f"carta giocata: {card}")
-                    conn.send("OK".encode('utf-8'))
-                
-                #se la carta è diversa dalla prima carta giocata
-                else:
-                    conn.send("STOP".encode('utf-8'))
-                    print(f"carte giocate: {len(card_played)}")
-                    print(f"carta giocata: {card}")
-                    print(f"[LOG] il turno del giocatore {player_name} è terminato!")
-                    break
                                                       
             #assegno il tris se è stato fatto
             if len(card_played) == 3:
