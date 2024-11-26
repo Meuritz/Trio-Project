@@ -98,5 +98,8 @@ class Trio:
     def get_min_card_player(self, player_index):
         return min(self.player_hand[player_index])
     
-    
+    #funzione per aggiungere una carta nella mano di un giocatore
+    def add_card_player(self, card, index):
+        self.player_hand[index].append(card)
+        self.sort_hand(index)
     
