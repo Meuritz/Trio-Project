@@ -292,8 +292,7 @@ class GameServer:
                     #se la carta è uguale alla prima giocata o è la prima
                     if len(card_played) == 0 or card == card_played[0][0]:
                         
-                        #la rimuovo dalla mano del giocatore
-                        game.player_hand[turn].remove(card)
+                        
                         #la aggiungo alle carte giocate nel turno, con il codice corrispettivo
                         card_played.append([card, "BOARD", card_index])
                         #dico al client che puo continuare a giocare
@@ -372,8 +371,7 @@ class GameServer:
                     #se la carta è uguale alla prima giocata o è la prima
                     if len(card_played) == 0 or card == card_played[0][0]:
                         
-                        #la rimuovo dalla mano del giocatore
-                        game.player_hand[turn].remove(card)
+
                         #la aggiungo alle carte giocate nel turno, con il codice corrispettivo
                         card_played.append([card, "PLAYER", selected_index])
                         #dico al client che puo continuare a giocare
