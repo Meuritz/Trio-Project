@@ -13,7 +13,7 @@ class GameServer:
         self.login_lock = threading.Lock() #per evitare che più utenti agiscano allo stesso tempo su "players"
         self.start = threading.Event() #per far partire la partita una volta che sono entrati 3 giocatori
         self.connected_players = 0
-        self.comm_lock =threading.Lock()
+        self.comm_lock = threading.Lock()
 
     #funzione per aggiungere i giocatori in memoria
     def add_player(self, username, addr, conn):
@@ -424,6 +424,11 @@ class GameServer:
 
 
 if __name__ == "__main__":
+    
+    
+    
+    
+    
     server = GameServer()
     server.start_server()
     server.start_game()
