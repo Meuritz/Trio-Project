@@ -2,8 +2,11 @@ import socket
 import threading
 import time
 from gamelib import Trio
+from termcolor import colored
+from os import system, name
 
 class GameServer:
+    
     #inizializzo le variabili con un costruttore
     def __init__(self, host="localhost", port=60420):
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -31,53 +34,40 @@ class GameServer:
         
         running = True
         
-        try:
-            # Prompt for username
-            conn.send("Enter your username: ".encode('utf-8'))  # Send a prompt for the username
+        # ricevo l'username dal client
+        username = conn.recv(1024).decode('utf-8')
+        print(f"[PLAYER] {username} da {addr}")
 
-            # Receive the username from the client
-            username = conn.recv(1024).decode('utf-8')
-            print(f"[PLAYER] {username} da {addr}")
-
-            # Store the username in the players list
-            with self.login_lock:
-                self.add_player(username, conn, addr)
-            
-            # stampo il numero di giocatori connessi
-            print(f"{self.connected_players} giocatori connessi")
-
-            # Send a welcome message back to the client
-            welcome_message = f"Benvenut3 {username}! il gioco iniziera a breve.."
-            conn.send(welcome_message.encode('utf-8'))
-    
-            #quando si arriva a 3 giocatori il gioco inizia in automatico
-            self.start.wait()
-            time.sleep(1)
-
-            # da qui inizia il gioco
-            while running:
-                pass
+        # metto l'username insieme al suo indirizzo in un array
+        with self.login_lock:
+            self.add_player(username, conn, addr)
         
-        #gestisco possibili errori
-        except (socket.error, ConnectionResetError, WindowsError) as e:
-            print(f"[DISCONNECT] {addr} si è disconnesso a causa di {e}")
-            with self.login_lock:
-                self.remove_player(addr)
-        finally:
-            running = False
-            conn.close()
+        # stampo il numero di giocatori connessi
+        print(f"{len(self.players)} giocatori connessi")
+
+        # mamdo un messaggio di benvenuto al client
+        welcome_message = f"Benvenut3 {username}! il gioco iniziera a breve.."
+        conn.send(welcome_message.encode('utf-8'))
+
+        #quando si arriva a 3 giocatori il gioco inizia in automatico
+        self.start.wait()
+        time.sleep(1)
+
+        # da qui inizia il gioco
+        while running:
+            pass
     
-    #metodo per fare avviare il server
+    #funzione principale del server
     def start_server(self):
        
-        # iniziamo ad avviare il server
+        # iniziamo ad avviare il server, facendo il bind di quest'ultimo ad ip e porta
         self.server_socket.bind((self.host, self.port))
 
-        # From here we listen for connections
+        # rimaniamo in ascolto per le connessioni
         self.server_socket.listen(2)
 
-        # segnalo che il server è online
-        print(f"Server online su {self.host} ed in ascolto sulla porta {self.port}")
+        # scrivo sul terminale che il server è online
+        print(colored(f"Server online su {self.host} ed in ascolto sulla porta {self.port}", color="green"))
 
         # gestisco le connessioni
         while True:
@@ -151,25 +141,29 @@ class GameServer:
                 conn.send("MESSAGE".encode('utf-8'))
                 conn.send(card_message.encode('utf-8'))
 
-                # Wait for the client to acknowledge receipt of messages
+                # aspetto che il clien mi mandi conferma di ricezione
                 if conn.recv(1024).decode('utf-8') == "READY":
                     pass
 
-            # Notify the client that all messages have been sent
+            # dico al client che tutti i messaggi sono stati inviati
             conn.send("DONE".encode('utf-8'))
 
             # aspetto che tutti i giocatori mandino la conferma della ricezione
             if conn.recv(1024).decode('utf-8') == "DONE":
                 ack += 1
 
+        #stampo sul terminale un messaggio diverso in base all'esito del invio
         if ack == len(self.players):
-            print("[SERVER] messaggi inviati con successo!")
+            print(colored("[SERVER] messaggi inviati con successo!", "green"))
         else:
-            print("[SERVER] errore nel invio dei messaggi :(")
+            print(colored("[SERVER] errore nel invio dei messaggi :(", "red"))
         
     #recupera i nomi dei giocatori eccetto quello di turno
     def get_player_choice(self, turn):
-        
+        """
+        questa funzione serve per far scegliere al giocatore di turno, il giocatore da cui
+        prendere la carta
+        """
         names = []
         
         i = 0
@@ -184,8 +178,22 @@ class GameServer:
         
         return names
 
-    #this method handles the game
+    def send_msg(self, message):
+        
+        ack = ""
+        
+        for player in self.players:
+            conn = player[1]
+            conn.send("MSG".encode('utf-8'))
+            conn.send(message.encode('utf-8'))
+
+    #questa funzione gestisce il gioco
     def start_game(self):
+        
+        """
+        questa funzione gestisce il gioco vero e proprio, si occupa della logica
+        e di inviare e ricevere messaggi e risposte dai client
+        """
 
         update = True
         turn = 0
@@ -224,6 +232,10 @@ class GameServer:
                 #0: il giocatore gioca una carta dalla mano
                 if move == "0":
                     
+                    """
+                    quando un giocatore vuole giocare una carta direttamente dalla propria mano
+                    """
+
                     #recupero la carta
                     card_index = int(conn.recv(1024).decode('utf-8'))
                     card = game.player_hand[turn][card_index]
@@ -265,6 +277,12 @@ class GameServer:
                 #1: scopri una carta dalla board
                 elif move == "1":
                     
+                    """
+                    quando un giocatore vuole scoprire una carta dalla board
+                    richiama dei metodi della classe del gioco che si occupano di recuperare la carta
+                    e metterla nella board del gioco
+                    """
+
                     #prendo l'indice della carta da scoprire
                     card_index = int(conn.recv(1024).decode('utf-8'))
                     
@@ -292,7 +310,6 @@ class GameServer:
                     #se la carta è uguale alla prima giocata o è la prima
                     if len(card_played) == 0 or card == card_played[0][0]:
                         
-                        
                         #la aggiungo alle carte giocate nel turno, con il codice corrispettivo
                         card_played.append([card, "BOARD", card_index])
                         #dico al client che puo continuare a giocare
@@ -313,6 +330,11 @@ class GameServer:
                 #2 chiedi una carta ad uno dei giocatori
                 elif move == "2":
                     
+                    """
+                    questa sezione di codice permette al client di scegliere un giocatore
+                    e quale carte vuole prendere tra alta e bassa
+                    """
+
                     #recupero la scelta possibile 
                     names = self.get_player_choice(turn)
                     
@@ -329,7 +351,6 @@ class GameServer:
                        x = names[i].lstrip(f"[{i}] ")
                        names[i] = x
                 
-                                
                     #ricevo la scelta del giocatore
                     player_choice = int(conn.recv(1024).decode('utf-8'))    
                                                                 
@@ -371,7 +392,6 @@ class GameServer:
                     #se la carta è uguale alla prima giocata o è la prima
                     if len(card_played) == 0 or card == card_played[0][0]:
                         
-
                         #la aggiungo alle carte giocate nel turno, con il codice corrispettivo
                         card_played.append([card, "PLAYER", selected_index])
                         #dico al client che puo continuare a giocare
@@ -391,14 +411,16 @@ class GameServer:
                         break
                                                       
             #assegno il tris se è stato fatto
-            if len(card_played) == 3:
+            if card_played[0][0] == card_played[0][1] == card_played[0][2]:
                 game.tris_counter[turn] += 1
-                print(f"[LOG] il {player_name} fatto un tris!")
-            
+                print(colored(f"[LOG] il {player_name} fatto un tris!", "yellow"))
+                self.send_msg(f"il giocatore {player_name} ha fatto un tris!")
+                time.sleep(1.5)
+
             #restituisco le carte se non c'è stato un tris
-            else:           
-                print("[LOG] rimetto a posto le carte")
-                
+            else:
+                self.send_msg(f"il giocatore {player_name} non ha fatto un tris :(")
+                print(colored("[LOG] rimetto a posto le carte", "yellow"))
                 update = True
 
                 for cards in card_played:
@@ -422,13 +444,49 @@ class GameServer:
             else:
                 turn += 1
 
+# funzione per fare clear indipendente dal sistema operativo
+def clear():
 
+    # for windows
+    if name == 'nt':
+        _ = system('cls')
+
+    # for mac and linux(here, os.name is 'posix')
+    else:
+        _ = system('clear')
+
+#main
 if __name__ == "__main__":
     
+    clear()
+
+    print (colored(r"""        
+░▒▓████████▓▒░ ░▒▓███████▓▒░   ░▒▓█▓▒░   ░▒▓██████▓▒░  
+   ░▒▓██▓▒░    ░▒▓█▓▒  ▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░ 
+   ░▒▓██▓▒░    ░▒▓█▓▒  ▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒  ▒▓█▓▒░ 
+   ░▒▓██▓▒░    ░▒▓███████▓▒░   ░▒▓█▓▒░  ░▒▓█▓▒  ▒▓█▓▒░ 
+   ░▒▓██▓▒░    ░▒▓█▓▒  ▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒  ▒▓█▓▒░ 
+   ░▒▓██▓▒░    ░▒▓█▓▒  ▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░ 
+   ░▒▓██▓▒░    ░▒▓█▓▒  ▒▓█▓▒░  ░▒▓█▓▒░   ░▒▓██████▓▒░                                                                                                           
+                                               """, "light_magenta", attrs=["blink"]))
     
+    print(colored("Benvenuti alla interfaccia server!","yellow", attrs=["bold"]))
     
-    
-    
-    server = GameServer()
-    server.start_server()
-    server.start_game()
+    while True:
+        print("\nMenu:")
+        print("[1] Avvia il Server")
+        print("[2] Esci")
+        
+        choice = input(colored("-->", attrs=["bold", "blink"]))
+        
+        if choice == "1":
+            server = GameServer()
+            server.start_server()
+            server.start_game()
+
+        elif choice == "2":
+            print("Uscendo...")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
