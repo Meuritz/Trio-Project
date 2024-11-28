@@ -88,7 +88,7 @@ class GameServer:
             #chiedo conferma per avviare la partita dopo che sono entrati tutti i giocatori ed hanno messo il loro username
             if (len(self.players)) == 3: 
                 
-                print("\nTutti i giocatori sono connessi, inizio la partita...")
+                print(colored("\nTutti i giocatori sono connessi, inizio la partita...", "green"))
                 time.sleep(1) 
                 self.start.set()
                 break    
@@ -121,12 +121,13 @@ class GameServer:
                     ack += 1
 
             if(ack == 3):
-                print("[SERVER] Carte inviate con successo!")
+                print(colored("[SERVER] Carte inviate con successo!", "green"))
             else:
-                print("[SERVER] Errore nel invio delle carte")
+                print(colored("[SERVER] Errore nel invio delle carte", "red"))
 
     #per mandare le carte che sono state giocate durante il turno
     def send_message(self, messages):
+        
         ack = 0
         
         for player in self.players:
@@ -137,7 +138,7 @@ class GameServer:
 
             # mando i messaggi ad ogni client 
             for card_message in messages:
-                print(f"[SERVER] Inviando messaggio a {player[0]}: {card_message}")  # Print the message being sent
+                print(colored(f"[SERVER] Inviando messaggio a {player[0]}: {card_message}", "yellow"))  # Print the message being sent
                 conn.send("MESSAGE".encode('utf-8'))
                 conn.send(card_message.encode('utf-8'))
 
@@ -164,6 +165,7 @@ class GameServer:
         questa funzione serve per far scegliere al giocatore di turno, il giocatore da cui
         prendere la carta
         """
+
         names = []
         
         i = 0
@@ -227,7 +229,7 @@ class GameServer:
 
                 #ricevo la mossa dal giocatore
                 move = conn.recv(1024).decode('utf-8')
-                print(f"[GAME] Move = {move}")
+                print(colored(f"[GAME] Move = {move}", "yellow"))
                 
                 #0: il giocatore gioca una carta dalla mano
                 if move == "0":
@@ -261,8 +263,9 @@ class GameServer:
                         #dico al client che puo continuare a giocare
                         conn.send("OK".encode('utf-8'))
 
-                        print(f"[GAME]carte giocate: {len(card_played)}")
-                        print(f"[GAME]carta giocata: {card}")
+                        print(colored(f"[GAME]carte giocate: {len(card_played)}", "cyan"))
+                        print(colored(f"[GAME]carta giocata: {card}", "cyan"))
+                        
                         
                     #se la carta è diversa dalla prima carta giocata
                     else:
@@ -270,8 +273,8 @@ class GameServer:
                         card_played.append([card, "HAND"])
                         #termino il turno del giocatore
                         conn.send("STOP".encode('utf-8'))
-                        print(f"[GAME]carta giocata: {card}")
-                        print(f"[GAME] il turno del giocatore {player_name} è terminato!")
+                        print(colored(f"[GAME]carta giocata: {card}", "cyan"))
+                        print(colored(f"[GAME] il turno del giocatore {player_name} è terminato!", "yellow"))
                         break
                     
                 #1: scopri una carta dalla board
@@ -315,16 +318,16 @@ class GameServer:
                         #dico al client che puo continuare a giocare
                         conn.send("OK".encode('utf-8'))
                         
-                        print(f"[GAME]carte giocate: {len(card_played)}")
-                        print(f"[GAME]carta giocata: {card}")
+                        print(colored(f"[GAME]carte giocate: {len(card_played)}", "cyan"))
+                        print(colored(f"[GAME]carta giocata: {card}", "cyan"))
                         
                     #se la carta è diversa dalla prima carta giocata
                     else:
                         #la aggiungo alle carte giocate nel turno, con il codice corrispettivo
                         card_played.append([card, "BOARD", card_index])
                         conn.send("STOP".encode('utf-8'))
-                        print(f"[GAME]carta giocata: {card}")
-                        print(f"[GAME] il turno del giocatore {player_name} è terminato!")
+                        print(colored(f"[GAME]carta giocata: {card}", "cyan"))
+                        print(colored(f"[GAME] il turno del giocatore {player_name} è terminato!", "yellow"))
                         break
              
                 #2 chiedi una carta ad uno dei giocatori
@@ -397,8 +400,8 @@ class GameServer:
                         #dico al client che puo continuare a giocare
                         conn.send("OK".encode('utf-8'))
                         
-                        print(f"[GAME]carte giocate: {len(card_played)}")
-                        print(f"[GAME]carta giocata: {card}")
+                        print(colored(f"[GAME]carte giocate: {len(card_played)}", "cyan"))
+                        print(colored(f"[GAME]carta giocata: {card}", "cyan"))
                         
                     #se la carta è diversa dalla prima carta giocata
                     else:
@@ -406,14 +409,20 @@ class GameServer:
                         card_played.append([card, "PLAYER", selected_index])
                         #termino il turno del giocatore
                         conn.send("STOP".encode('utf-8'))
-                        print(f"[GAME]carta giocata: {card}")
-                        print(f"[GAME] il turno del giocatore {player_name} è terminato!")
+                        print(colored(f"[GAME]carta giocata: {card}", "cyan"))
+                        print(colored(f"[GAME] il turno del giocatore {player_name} è terminato!", "yellow"))
                         break
                                                       
             #assegno il tris se è stato fatto
-            if card_played[0][0] == card_played[0][1] == card_played[0][2]:
+            if card_played[0][0] == 7 and card_played[1][0] == 7 and card_played[2][0] == 7:
+                game.tris_counter[turn] = 3
+                print(colored(f"[LOG] il giocatore {player_name} fatto un tris!", "yellow"))
+                self.send_msg(f"il giocatore {player_name} ha fatto un tris!")
+                time.sleep(1.5)
+
+            elif card_played[0][0] == card_played[1][0] == card_played[2][0]:
                 game.tris_counter[turn] += 1
-                print(colored(f"[LOG] il {player_name} fatto un tris!", "yellow"))
+                print(colored(f"[LOG] il giocatore {player_name} fatto un tris!", "yellow"))
                 self.send_msg(f"il giocatore {player_name} ha fatto un tris!")
                 time.sleep(1.5)
 
@@ -444,6 +453,21 @@ class GameServer:
             else:
                 turn += 1
 
+        #assegno la vittoria
+        for player, tris in zip(self.players, game.tris_counter):
+
+            conn = player[1]
+            
+            conn.send("END".encode('utf-8'))
+
+            if tris == 3:
+                conn.send("VICTORY".encode('utf-8'))
+            else:
+                conn.send("LOSS".encode('utf-8'))
+            
+            if conn.recv(1024).decode('utf-8') == "DONE":
+                pass
+
 # funzione per fare clear indipendente dal sistema operativo
 def clear():
 
@@ -458,21 +482,20 @@ def clear():
 #main
 if __name__ == "__main__":
     
-    clear()
-
-    print (colored(r"""        
+    while True:
+        clear()
+        print (colored(r"""            
 ░▒▓████████▓▒░ ░▒▓███████▓▒░   ░▒▓█▓▒░   ░▒▓██████▓▒░  
    ░▒▓██▓▒░    ░▒▓█▓▒  ▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░ 
    ░▒▓██▓▒░    ░▒▓█▓▒  ▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒  ▒▓█▓▒░ 
    ░▒▓██▓▒░    ░▒▓███████▓▒░   ░▒▓█▓▒░  ░▒▓█▓▒  ▒▓█▓▒░ 
    ░▒▓██▓▒░    ░▒▓█▓▒  ▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒  ▒▓█▓▒░ 
    ░▒▓██▓▒░    ░▒▓█▓▒  ▒▓█▓▒░  ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░ 
-   ░▒▓██▓▒░    ░▒▓█▓▒  ▒▓█▓▒░  ░▒▓█▓▒░   ░▒▓██████▓▒░                                                                                                           
-                                               """, "light_magenta", attrs=["blink"]))
-    
-    print(colored("Benvenuti alla interfaccia server!","yellow", attrs=["bold"]))
-    
-    while True:
+   ░▒▓██▓▒░    ░▒▓█▓▒  ▒▓█▓▒░  ░▒▓█▓▒░   ░▒▓██████▓▒░                                                                                                                                                       
+""", "light_magenta", attrs=["blink"]))
+        
+        print(colored("Benvenuti alla interfaccia server!","yellow", attrs=["bold"]))
+
         print("\nMenu:")
         print("[1] Avvia il Server")
         print("[2] Esci")

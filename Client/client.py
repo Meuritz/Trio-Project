@@ -1,6 +1,7 @@
 import socket
 from os import system, name
 from termcolor import colored
+import time
 
 # Ip e porta a cui connettersi
 SERVER_HOST = "localhost"
@@ -25,7 +26,7 @@ def start_client():
     msg = client_socket.recv(1024).decode('utf-8')
     print(msg)
 
-    return client_socket, username
+    return client_socket
 
 
 # funzione di clear indipendente dal sistema in uso
@@ -42,7 +43,7 @@ def clear():
 #per ricevere dal server e stampare la carte in mano e la board
 def update_cards(client_socket):
     
-    #clear()
+    clear()
 
     for _ in range(5):
         print("\n")
@@ -76,6 +77,7 @@ def recv_message(client_socket):
             #print("All messages received and printed")
             client_socket.send("DONE".encode('utf-8'))
             break
+    print(colored("======================================================================","cyan" ,attrs=["blink", "bold"]))    
 
 #funzione per ricevere e stampare un singolo messaggio
 def recv_msg(client_socket):
@@ -86,7 +88,7 @@ def recv_msg(client_socket):
 #il gioco vero e proprio (loop)
 def client_loop():
     
-    client_socket, player_name = start_client()
+    client_socket = start_client()
 
     #loop del gioco
     while True:
@@ -106,7 +108,41 @@ def client_loop():
         #serve per inviare dei messaggi singoli
         if message == "MSG":
             recv_msg(client_socket)
-        
+
+        #per chiudere il gioco lato client
+        if message == "END":
+            
+            result = client_socket.recv(1024).decode('utf-8')
+
+            if result == "VICTORY":
+               clear()
+               print(colored(r"""
+.##.....##.####.########.########..#######..########..####....###...
+.##.....##..##.....##.......##....##.....##.##.....##..##....##.##..
+.##.....##..##.....##.......##....##.....##.##.....##..##...##...##.
+.##.....##..##.....##.......##....##.....##.########...##..##.....##
+..##...##...##.....##.......##....##.....##.##...##....##..#########
+...##.##....##.....##.......##....##.....##.##....##...##..##.....##
+....###....####....##.......##.....#######..##.....##.####.##.....##
+""", "green", attrs=["blink"]))
+               client_socket.send("DONE".encode('utf-8'))
+               time.sleep(5)
+               break
+            else:
+                clear()
+                print(colored(r"""
+..######...######...#######..##....##.########.####.########.########....###...
+.##....##.##....##.##.....##.###...##.##........##.....##.......##......##.##..
+.##.......##.......##.....##.####..##.##........##.....##.......##.....##...##.
+..######..##.......##.....##.##.##.##.######....##.....##.......##....##.....##
+.......##.##.......##.....##.##..####.##........##.....##.......##....#########
+.##....##.##....##.##.....##.##...###.##........##.....##.......##....##.....##
+..######...######...#######..##....##.##.......####....##.......##....##.....##
+""", "red", attrs=["blink"]))
+                client_socket.send("DONE".encode('utf-8'))
+                time.sleep(5)
+                break
+
         # loop per giocare, quando il giocatore è di turno
         elif message == "PLAY":
             print("è il tuo turno!")
@@ -227,6 +263,29 @@ def client_loop():
                         break
                     
                                        
-if __name__ == "__main__":
+while True:
+    
+    clear()
 
-    client_loop()
+    print(colored(""" 
+████████╗██████╗ ██╗ ██████╗ 
+╚══██╔══╝██╔══██╗██║██╔═══██╗
+   ██║   ██████╔╝██║██║   ██║                             
+   ██║   ██╔══██╗██║██║   ██║
+   ██║   ██║  ██║██║╚██████╔╝                                           
+   ╚═╝   ╚═╝  ╚═╝╚═╝ ╚═════╝                                               
+""","cyan", attrs=["blink"]))
+    print(colored("[1] Connettiti e gioca", "light_magenta"))
+    print(colored("[2] Esci", "light_red"))
+    print(colored("Version 0.0.1 @Meuritz", "light_yellow"))
+    print(colored("Seleziona un opzione:", "light_green"))
+    choice = input(colored("-->", "light_blue", attrs=["blink"]))
+    
+    if choice == "1":
+        client_loop()
+    elif choice == "2":
+        print("Uscendo...")
+        break
+    else:
+        print("Scelta non valida riprova")
+        time.sleep(3)
