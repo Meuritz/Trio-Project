@@ -45,8 +45,9 @@ def update_cards(client_socket):
     
     clear()
 
-    for _ in range(5):
-        print("\n")
+    # for _ in range(5):
+    #     print("\n")
+    
     print(colored("======================================================================","cyan" ,attrs=["blink", "bold"]))
     #mando le carte della board coperte
     print("Carte nella board:")

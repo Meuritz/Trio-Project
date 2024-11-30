@@ -103,7 +103,7 @@ class GameServer:
                 
                 conn = player[1]
 
-                #UPDATE il client si prepara a ricevere le carte
+                #UPDATE, indico al client che sto per inviare Board e Carte
                 conn.send("UPDATE".encode('utf-8'))
 
                 #mando la board coperta
@@ -180,6 +180,7 @@ class GameServer:
         
         return names
 
+    # manda un singolo messaggio a tutti i client
     def send_msg(self, message):
         
         ack = ""
@@ -225,7 +226,7 @@ class GameServer:
             #faccio giocare il giocatore fino a che non usa una carta diversa dalla prima usata
             for i in range(3):
                 
-                print(f"sono nel turno del giocatore {player_name}")
+                print(colored(f"[GAME]turno del giocatore {player_name}", "cyan"))
 
                 #ricevo la mossa dal giocatore
                 move = conn.recv(1024).decode('utf-8')
@@ -413,24 +414,36 @@ class GameServer:
                         print(colored(f"[GAME] il turno del giocatore {player_name} è terminato!", "yellow"))
                         break
                                                       
-            #assegno il tris se è stato fatto
+            """
+            In questa parte di codice controlliamo se è stato effettuato un tris, o un tris di 7, in caso contrario
+            rimettiamo a posto le carte che sono state prese 
+            """            
+            #in caso di tris di 7
             if card_played[0][0] == 7 and card_played[1][0] == 7 and card_played[2][0] == 7:
                 game.tris_counter[turn] = 3
                 print(colored(f"[LOG] il giocatore {player_name} fatto un tris!", "yellow"))
                 self.send_msg(f"il giocatore {player_name} ha fatto un tris!")
-                time.sleep(1.5)
-
+                
+            #in caso di tris normale
             elif card_played[0][0] == card_played[1][0] == card_played[2][0]:
                 game.tris_counter[turn] += 1
                 print(colored(f"[LOG] il giocatore {player_name} fatto un tris!", "yellow"))
                 self.send_msg(f"il giocatore {player_name} ha fatto un tris!")
+                
+                #tolgo definitivamente le carte prese dalla board
+                for card in card_played:
+                    if card[1] == "BOARD":
+                        game.remove_from_board(card[2])
+                        game.reset_gameboard()
                 time.sleep(1.5)
-
+                
+                #aggiorno le carte
+                update = True
+                
             #restituisco le carte se non c'è stato un tris
             else:
                 self.send_msg(f"il giocatore {player_name} non ha fatto un tris :(")
                 print(colored("[LOG] rimetto a posto le carte", "yellow"))
-                update = True
 
                 for cards in card_played:
                     
@@ -445,7 +458,9 @@ class GameServer:
 
                     #rimetto la carta nella mano del giocatore dal quale proviene                  
                     elif cards[1] == "PLAYER":
-                        game.add_card_player(cards[0], cards[2])    
+                        game.add_card_player(cards[0], cards[2])
+                
+                update = True
                         
             #cambio il turno
             if turn == 2:
