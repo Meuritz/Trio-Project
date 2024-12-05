@@ -278,7 +278,7 @@ while True:
 ""","cyan", attrs=["blink"]))
     print(colored("[1] Connettiti e gioca", "light_magenta"))
     print(colored("[2] Esci", "light_red"))
-    print(colored("Version 0.0.1 @Meuritz", "light_yellow"))
+    print(colored("Version 0.0.2 @Meuritz", "light_yellow"))
     print(colored("Seleziona un opzione:", "light_green"))
     choice = input(colored("-->", "light_blue", attrs=["blink"]))
     
