@@ -143,13 +143,26 @@ class GameServer:
             # mando i messaggi ad ogni client 
             for card_message in messages:
                 print(colored(f"[SERVER] Inviando messaggio a {player[0]}: {card_message}", "yellow"))  # Print the message being sent
-                conn.send("MESSAGE".encode('utf-8'))
-                conn.send(card_message.encode('utf-8'))
+                
+                #invio del messaggio
+                while True:    
+                    try:
+                        conn.settimeout(10)    
+                        conn.send("MESSAGE".encode('utf-8'))
+                        conn.send(card_message.encode('utf-8'))
 
-                # aspetto che il clien mi mandi conferma di ricezione
-                if conn.recv(1024).decode('utf-8') == "READY":
-                    pass
-
+                        # aspetto che il client mi mandi conferma di ricezione
+                        if conn.recv(1024).decode('utf-8') == "READY":
+                            conn.settimeout(None)
+                            print("[LOG]: invio riuscito!")
+                        
+                    except socket.timeout:
+                        print("[LOG]: invio fallito, riprovo")
+                        continue
+                    
+                    #se l'invio è avvenuto
+                    break
+                
             # dico al client che tutti i messaggi sono stati inviati
             conn.send("DONE".encode('utf-8'))
 
