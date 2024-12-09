@@ -91,7 +91,9 @@ class GameServer:
                 print(colored("\nTutti i giocatori sono connessi, inizio la partita...", "green"))
                 time.sleep(1) 
                 self.start.set()
-                break    
+                break
+    def close_connection(self):
+        self.server_socket.close()
         
     #0 aggiorno le carte in mano ad i giocatori
     def give_cards(self, game):
@@ -518,9 +520,12 @@ if __name__ == "__main__":
         choice = input(colored("-->", attrs=["bold", "blink"]))
         
         if choice == "1":
+            
             server = GameServer()
+            
             server.start_server()
             server.start_game()
+            server.close_connection()
 
         elif choice == "2":
             print("Uscendo...")

@@ -128,6 +128,8 @@ def client_loop():
 """, "green", attrs=["blink"]))
                client_socket.send("DONE".encode('utf-8'))
                time.sleep(5)
+               #chiudo la connessione
+               client_socket.close()
                break
             else:
                 clear()
@@ -142,6 +144,8 @@ def client_loop():
 """, "red", attrs=["blink"]))
                 client_socket.send("DONE".encode('utf-8'))
                 time.sleep(5)
+                #chiudo la connessiones
+                client_socket.close()
                 break
 
         # loop per giocare, quando il giocatore è di turno
