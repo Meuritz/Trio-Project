@@ -90,6 +90,8 @@ class GameServer:
                 time.sleep(1) 
                 self.start.set()
                 break
+    
+    #per chiudere il socket
     def close_connection(self):
         self.server_socket.close()
         
@@ -130,7 +132,9 @@ class GameServer:
         
         ack = 0
         
+        #per ogni giocatore
         for player in self.players:
+            
             conn = player[1]
 
             # dico al client che sto per inviare dei messaggi

@@ -44,12 +44,9 @@ def clear():
 def update_cards(client_socket):
     
     clear()
-
-    # for _ in range(5):
-    #     print("\n")
     
     print(colored("======================================================================","cyan" ,attrs=["blink", "bold"]))
-    #mando le carte della board coperte
+    #ricevo e stampo la board
     print("Carte nella board:")
     board = client_socket.recv(1024).decode('utf-8')
     print(board)
@@ -57,7 +54,7 @@ def update_cards(client_socket):
     #chiedo il prossimo pacchetto
     client_socket.send("NEXT".encode('utf-8'))
 
-    #mando le carte in mano
+    #ricevo e stampo le carte in mano
     print("Carte in Mano:")
     hand = client_socket.recv(1024).decode('utf-8')
     print(hand)
