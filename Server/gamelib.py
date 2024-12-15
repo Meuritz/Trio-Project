@@ -6,13 +6,15 @@ class Trio:
         
         self.deck = []
 
-        self.board = []                      #board effettiva
-        self.gameboard = self.hidden_board() #board che viene stampata
+        self.board = []#board 
+
+        self.gameboard = self.hidden_board() #"fake" board
+
+        self.player_name = players
+
+        self.player_hand = []#carte in mano ad i giocatori
         
-        self.player_hand = []           #this 3 list rely on the fact that every position corresponds to a player
-        self.players = players           # ex index1, will be the hand of the player whit index 1, and the tris that
-        
-        self.tris_counter = [0, 0, 0]          #counter for tris that have been done
+        self.tris_counter = [0, 0, 0]#contatore dei tris
 
     #preparo il gioco
     def prepare_game(self):
@@ -39,35 +41,28 @@ class Trio:
         #inizializzo la gameboard con carte coperte
         self.gameboard = self.hidden_board()
     
-    #per ordinare le carte di un giocatore
+    #ordina le carte di un giocatore
     def sort_hand(self, player):
         self.player_hand[player].sort()
 
-    #funzione per stampare le carte di un giocatore
+    #restituisce le carte di un giocatore
     def print_cards(self, player):
         return str(self.player_hand[player])
+    
+    #funzione per aggiungere una carta nella mano di un giocatore
+    def add_card_player(self, card, index):
+        self.player_hand[index].append(card)
+        self.sort_hand(index)
+    
+    #prende la carta più alta dalla mano di un giocatore
+    def get_max_card_player(self, player_index):
+        return max(self.player_hand[player_index])
+    
+    #prende la carta più bassa dalla mano di un giocatore
+    def get_min_card_player(self, player_index):
+        return min(self.player_hand[player_index])
 
-    #funzione per ottenere le carte della board (sono le carte effettive)
-    def get_board(self):
-        return self.board
-    
-    #funzione per ottenere le carte dalla gameboard (carte viste dai giocatori)
-    def get_gameboard(self):
-        return str(self.gameboard)
-    
-    #funzione per ottenere una carta dalla board
-    def get_from_board(self, x):
-        return self.board[x]
-    
-    #funzione per aggiungere una determinata carta alla board
-    def add_board(self, value, x):
-        self.board[x] = value
-
-    #funzione per rimuove una determinata carta dalla board(la board effettiva)
-    def remove_from_board(self, x):
-        self.board[x] = ""
-    
-    #funzione per avere una board di carte coperte(board mostrata nel gioco)
+    #funzione per creare una board di carte coperte("fake" board)
     def hidden_board(self):
         
         hidden_board = []
@@ -81,25 +76,38 @@ class Trio:
                 hidden_board.append("X")
         
         return hidden_board
+
+    #funzione per ottenere le carte dalla "fake" board
+    def get_gameboard(self):
+        return str(self.gameboard)
     
+    #funzione per ottenere una carta dalla board
+    def get_from_board(self, x):
+        return self.board[x]
+    
+    #funzione per aggiungere una determinata carta alla board
+    def add_board(self, value, x):
+        self.board[x] = value
+
+    #funzione per rimuove una determinata carta dalla board
+    def remove_from_board(self, x):
+        self.board[x] = ""
+    
+    #funzione per scoprire una carta dalla "fake" board
+    def draw_from_board(self, x):
+        self.gameboard[x] = self.get_from_board(x)
+
     #per ricoprire le carte
     def reset_gameboard(self):
         self.gameboard = self.hidden_board()
-    
-    #funzione per scoprire una carta dalla  board
-    def draw_from_board(self, x):
-        self.gameboard[x] = self.get_from_board(x)
-    
-    #prende la carta più alta dalla mano di un giocatore
-    def get_max_card_player(self, player_index):
-        return max(self.player_hand[player_index])
-    
-    #prende la carta più bassa dalla mano di un giocatore
-    def get_min_card_player(self, player_index):
-        return min(self.player_hand[player_index])
-    
-    #funzione per aggiungere una carta nella mano di un giocatore
-    def add_card_player(self, card, index):
-        self.player_hand[index].append(card)
-        self.sort_hand(index)
+
+    #prende i punteggi dei giocatori
+    def get_Points(self):
+        
+        points_scored = ""
+
+        for i in range(3):
+            points_scored += f"{self.player_name[i]}:  {self.tris_counter[i]} | "
+
+        return points_scored
     

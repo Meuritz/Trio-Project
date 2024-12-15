@@ -13,10 +13,10 @@ class GameServer:
         self.host = host
         self.port = port
         self.players = []
+        self.connected_players = 0
         self.login_lock = threading.Lock() #per evitare che più utenti agiscano allo stesso tempo su "players"
         self.start = threading.Event() #per far partire la partita una volta che sono entrati 3 giocatori
-        self.connected_players = 0
-        self.comm_lock = threading.Lock()
+        
 
     #funzione per aggiungere i giocatori in memoria
     def add_player(self, username, addr, conn):
@@ -36,18 +36,18 @@ class GameServer:
         username = conn.recv(1024).decode('utf-8')
         print(f"[PLAYER] {username} da {addr}")
 
-        # metto l'username insieme al suo indirizzo in un array
+        # aggiungo i dati del giocatore in memoria
         with self.login_lock:
             self.add_player(username, conn, addr)
         
         # stampo il numero di giocatori connessi
         print(f"{len(self.players)} giocatori connessi")
 
-        # mamdo un messaggio di benvenuto al client
+        # mando un messaggio al client
         welcome_message = f"Benvenut3 {username}! il gioco iniziera a breve.."
         conn.send(welcome_message.encode('utf-8'))
 
-        #quando si arriva a 3 giocatori il gioco inizia in automatico
+        # aspetta fino a che non entrano 3 giocatori
         self.start.wait()
         time.sleep(1)
 
@@ -58,13 +58,12 @@ class GameServer:
     #funzione principale del server
     def start_server(self):
        
-        # iniziamo ad avviare il server, facendo il bind di quest'ultimo ad ip e porta
+        # bind del server
         self.server_socket.bind((self.host, self.port))
 
-        # rimaniamo in ascolto per le connessioni
+        # il server rimane in ascolto
         self.server_socket.listen(2)
 
-        # scrivo sul terminale che il server è online
         print(colored(f"Server online su {self.host} ed in ascolto sulla porta {self.port}", color="green"))
 
         # gestisco le connessioni
@@ -73,27 +72,27 @@ class GameServer:
             # accetto le connessioni fino ad un max di 3, e creo un thread per ogni connessione
             if (self.connected_players) != 3:
 
-                #accetto le connessioni ed avvio un thread per ognuna di esse
+                # accetta la connessione
                 conn, addr = self.server_socket.accept()
+
+                # avvia un thread per gestire la connessione
                 thread = threading.Thread(target=self.handle_client, args=(conn, addr))
 
-                # faccio partire il thread appena creato
+                # avvia il thread appena creato
                 thread.start()
 
-                #aumento di 1 il numero dei giocatori
+                #aumento di 1(tiene conto dei giocatori connessi)
                 self.connected_players += 1
                 
-            #chiedo conferma per avviare la partita dopo che sono entrati tutti i giocatori ed hanno messo il loro username
+            #quando ci sono 3 giocatori
             if (len(self.players)) == 3: 
                 
                 print(colored("\nTutti i giocatori sono connessi, inizio la partita...", "green"))
                 time.sleep(1) 
+                
+                #sblocco il lock del gioco
                 self.start.set()
                 break
-    
-    #per chiudere il socket
-    def close_connection(self):
-        self.server_socket.close()
         
     #Funzione per mandare la board e la mano a ciuscun giocatore
     def send_Game(self, game):
@@ -106,6 +105,13 @@ class GameServer:
 
                 #indico al client che sto per inviare Board e Carte
                 conn.send("UPDATE".encode('utf-8'))
+                
+                #manda i punteggi dei giocatori
+                conn.send(game.get_Points().encode('utf-8'))
+
+                #aspetto conferma prima di continuare ad inviare
+                if conn.recv(1024).decode('utf-8') == "NEXT":
+                    pass
 
                 #mando la board(coperta)
                 conn.send(game.get_gameboard().encode('utf-8'))
@@ -179,8 +185,6 @@ class GameServer:
     # manda un singolo messaggio a tutti i client
     def send_Msg(self, message):
         
-        ack = ""
-        
         for player in self.players:
             conn = player[1]
             conn.send("MSG".encode('utf-8'))
@@ -205,20 +209,20 @@ class GameServer:
                 i += 1
         
         return names
+    
+    #per chiudere il socket del server
+    def close_connection(self):
+        self.server_socket.close()
 
     # Funzione principale del gioco
     def start_game(self):
         
-        """
-        questa funzione gestisce il gioco vero e proprio, si occupa della logica
-        e di inviare e ricevere messaggi e risposte dai client
-        """
-
         update = True
         turn = 0
 
-        #creo un oggetto trio e gli passo i giocatori
-        game = Trio(self.players)
+        #passiamo i nomi dei giocatori alla classe del gioco
+        player_name = [player[0] for player in self.players]
+        game = Trio(player_name)
         game.prepare_game()
 
         #fino a che un giocatore non arriva a 3 tris
@@ -265,7 +269,7 @@ class GameServer:
                     #mando le carte giocate in precedenza
                     self.send_Played_Cards(messages)
                     
-                    #aspetto che i client finiscano di aggiornare le carte
+                    #aspetto un secondo
                     time.sleep(1)
 
                     #se la carta è uguale alla prima giocata o è la prima
@@ -431,7 +435,8 @@ class GameServer:
             if card_played[0][0] == 7 and card_played[1][0] == 7 and card_played[2][0] == 7:
                 game.tris_counter[turn] = 3
                 print(colored(f"[LOG] il giocatore {player_name} fatto un tris!", "yellow"))
-                self.send_Msg(f"il giocatore {player_name} ha fatto un tris!")
+                self.send_Msg(f"il giocatore {player_name} ha fatto un tris di 7!")
+                time.sleep(4)
                 
             #in caso di tris normale
             elif card_played[0][0] == card_played[1][0] == card_played[2][0]:
@@ -444,7 +449,7 @@ class GameServer:
                     if card[1] == "BOARD":
                         game.remove_from_board(card[2])
                         game.reset_gameboard()
-                time.sleep(1.5)
+                time.sleep(4)
                 
                 #aggiorno le carte
                 update = True
@@ -452,6 +457,7 @@ class GameServer:
             #restituisco le carte se non c'è stato un tris
             else:
                 self.send_Msg(f"il giocatore {player_name} non ha fatto un tris :(")
+                time.sleep(4)
                 print(colored("[LOG] rimetto a posto le carte", "yellow"))
 
                 for cards in card_played:
