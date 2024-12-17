@@ -8,7 +8,7 @@ from os import system, name
 class GameServer:
     
     #inizializzo le variabili con un costruttore
-    def __init__(self, host="26.4.199.111", port=60420):
+    def __init__(self, host="localhost", port=60420):
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.host = host
         self.port = port
