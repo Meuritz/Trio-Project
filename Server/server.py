@@ -153,7 +153,7 @@ class GameServer:
                 #invio del messaggio
                 while True:    
                     try:
-                        conn.settimeout(10)    
+                        conn.settimeout(7)    
                         conn.send("MESSAGE".encode('utf-8'))
                         conn.send(card_message.encode('utf-8'))
 

@@ -6,9 +6,9 @@ import time
 class client:
 
     #apre il socket, ed invia un messaggio
-    def __init__(self, host="localhost", port=60420):
+    def __init__(self, host, port):
         
-        # Creiamo un socket
+        # Creo un socket
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         # connettiamo il client al server
@@ -147,7 +147,10 @@ class client:
                 for i in range(3):
                     
                     # il giocatore decide cosa vuole fare
-                    print("cosa vuoi fare?\n 0: carta da mano\n 1: carta dalla board\n 2: carta da un giocatore\n")
+                    print(colored("Fai la tua mossa!", "yellow"))
+                    print(colored("0: carta da mano", "red"))
+                    print(colored("1: carta dalla board", "green"))
+                    print(colored("2: carta da un giocatore", "blue"))
                     move = ""
                     
                     # ciclo fino a che il giocatore non sceglie un opzione valida
@@ -298,16 +301,39 @@ while True:
    ██║   ██║  ██║██║╚██████╔╝                                           
    ╚═╝   ╚═╝  ╚═╝╚═╝ ╚═════╝                                               
 ""","cyan", attrs=["blink"]))
-    print(colored("[1] Connettiti e gioca", "light_magenta"))
-    print(colored("[2] Esci", "light_red"))
-    print(colored("Version 0.0.2 @Meuritz", "light_yellow"))
+    print(colored("[1] Connettiti e gioca", "green"))
+    print(colored("[2] gioca in localhost", "light_magenta"))
+    print(colored("[3] Esci", "light_red"))
+    print(colored("Version 0.0.9 @Meuritz", "light_yellow"))
     print(colored("Seleziona un opzione:", "light_green"))
     choice = input(colored("-->", "light_blue", attrs=["blink"]))
     
+    #connessione ad un server specifico
     if choice == "1":
-        game = client()
-        game.client_loop()
+        try:
+            
+            ip = input("Inserisci l'indirizzo IP del server di gioco: \n -->")
+            
+            game = client(str(ip), 60420)
+            game.client_loop()
+            
+        except:
+            print("Impossibile stabilire una connessione")
+            time.sleep(3)
+            continue
+    
+    #gioco in localhost
     elif choice == "2":
+        try:
+            game = client("localhost", 60420)
+            game.client_loop()
+        except:
+            print("Impossibile stabilire una connessione")
+            time.sleep(3)
+            continue
+    
+    #chiude il client
+    elif choice == "3":
         print("Uscendo...")
         break
     else:
