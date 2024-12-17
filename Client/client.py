@@ -87,7 +87,7 @@ class client:
         while True:
             
             message = self.client_socket.recv(1024).decode('utf-8')
-            print(f"[LOG]: {message}")
+            #print(f"[LOG]: {message}")
             
             # se ricevo update aggiorno le carte 
             if message == "UPDATE":

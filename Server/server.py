@@ -8,7 +8,7 @@ from os import system, name
 class GameServer:
     
     #inizializzo le variabili con un costruttore
-    def __init__(self, host="localhost", port=60420):
+    def __init__(self, host="26.4.199.111", port=60420):
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.host = host
         self.port = port
@@ -269,8 +269,6 @@ class GameServer:
                     #mando le carte giocate in precedenza
                     self.send_Played_Cards(messages)
                     
-                    #aspetto un secondo
-                    time.sleep(1)
 
                     #se la carta è uguale alla prima giocata o è la prima
                     if len(card_played) == 0 or card == card_played[0][0]:
@@ -319,9 +317,6 @@ class GameServer:
                     
                     #mando le carte giocate in precedenza
                     self.send_Played_Cards(messages)
-
-                    #aspetto che i client finiscano di aggiornare le carte
-                    time.sleep(1)
 
                     #se la carta è uguale alla prima giocata o è la prima
                     if len(card_played) == 0 or card == card_played[0][0]:
@@ -402,9 +397,6 @@ class GameServer:
                     
                     #mando le carte giocate in precedenza
                     self.send_Played_Cards(messages)
-
-                    #aspetto che i client finiscano di aggiornare le carte
-                    time.sleep(1)
                 
                     #se la carta è uguale alla prima giocata o è la prima
                     if len(card_played) == 0 or card == card_played[0][0]:
