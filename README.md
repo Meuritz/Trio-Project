@@ -1,5 +1,3 @@
-Your game documentation is clear and informative, but there are a few grammatical and typographical errors that could be corrected to improve clarity and professionalism. Here's a revised version of your text:  
-
 ---
 
 # Trio: A Socket Card Game!
