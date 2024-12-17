@@ -39,6 +39,10 @@ This game is inspired by a real-life card game named **Trio**, created by Kaya M
    - If the server is bound correctly and the firewall doesn’t block connections, you will successfully join the game!
 
 ---
+## Extra info
+- the `start.bat` file, opens one instance of the server and tree of the client, this can be used to test if the game works on the current machine
+- the `3client.bat` file inside the client folder, opens 3 instances of a client, this was mainly used to test the game on different Network/Machines
+---
 
 ## Authors
 - [Meuritz](https://github.com/Meuritz)
