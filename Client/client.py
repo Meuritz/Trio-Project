@@ -187,7 +187,7 @@ class client:
 
                         #aspetto che il server mi dica se posso continuare
                         response = self.client_socket.recv(1024).decode('utf-8')
-                        print(f"[LOG] response = {response}") 
+                        #print(f"[LOG] response = {response}") 
 
                         #se il server ci manda "STOP" torniamo nel loop principale
                         if response == "STOP":
@@ -217,12 +217,11 @@ class client:
 
                         #aspetto che il server mi dica se posso continuare
                         response = self.client_socket.recv(1024).decode('utf-8')
-                        print(f"[LOG] response = {response}") 
+                        #print(f"[LOG] response = {response}") 
 
                         if response == "STOP":
                             break
                     
-
                     # carta da un giocatore
                     elif move == "2":
                         
@@ -272,7 +271,7 @@ class client:
 
                         #aspetto che il server mi dica se posso continuare
                         response = self.client_socket.recv(1024).decode('utf-8')
-                        print(f"[LOG] response = {response}") 
+                        #print(f"[LOG] response = {response}") 
 
                         if response == "STOP":
                             break
