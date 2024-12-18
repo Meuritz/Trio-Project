@@ -41,7 +41,6 @@ This game is inspired by a real-life card game named **Trio**, created by Kaya M
 ---
 ## Extra info
 - the `start.bat` file, opens one instance of the server and tree of the client, this can be used to test if the game works on the current machine
-- the `3client.bat` file inside the client folder, opens 3 instances of a client, this was mainly used to test the game on different Network/Machines
 ---
 
 ## Authors
